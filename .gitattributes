@@ -1,1 +1,5 @@
+# Normalise text files to LF
+* text=auto eol=lf
+
+# Keep the OS Vectoriser README when a merge conflict occurs
 README.md merge=keepours

@@ -1,0 +1,25 @@
+# Labelme config for cadastral map annotation.
+# Passed to labelme via --config at launch.
+#
+# Example feature labels (type one of these as the shape label):
+#   boundary   → linestrip  — land parcel boundary lines
+#   dashed     → linestrip  — dashed/gappy boundary lines (parish bounds, tenure splits, etc.)
+#   water      → polygon    — water features
+#   building   → polygon    — building footprints
+#   vegetation → polygon    — any land cover class symbology
+#   damage     → polygon    — document damage / symbology cover
+#   <text>     → polygon    — any other label is treated as a new feature class to finetune MapSAM
+
+labels:
+  - boundary
+  - dashed
+  - water
+  - building
+  - damage
+
+auto_save: false
+keep_prev: false
+
+shortcuts:
+  create_linestrip: "L"
+  create_polygon: "P"
