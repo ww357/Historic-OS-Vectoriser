@@ -31,7 +31,7 @@ from tqdm import tqdm
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "steps"))   # shared helpers
-from common import load_config   # noqa: E402
+from common import load_config, area_of_sheet   # noqa: E402
 
 from models.SolidLineUNet.architecture import build_model
 
@@ -66,6 +66,7 @@ def resolve_weights(
     Find weights to use. Search order:
       1. --weights CLI argument (explicit path)
       2. models/finetuned/working/<SHEET_ID>_best.weights.h5
+         then <AREA>_best.weights.h5 (train-lines --sheet AREA, for a block of a downloaded area)
       3. Most recently modified feedback_v* in models/finetuned/iterative/
       4. Most recently modified *.weights.h5 in models/base/ (recursive)
     """
@@ -86,6 +87,13 @@ def resolve_weights(
     working = working_dir / f"{sheet_id}_best.weights.h5"
     if working.exists():
         return working
+
+    # Weights trained on the whole area this sheet is a block of (train-lines --sheet AREA)
+    area = area_of_sheet(load_config(), sheet_id)
+    if area:
+        area_working = working_dir / f"{area}_best.weights.h5"
+        if area_working.exists():
+            return area_working
 
     # Most recent iterative feedback weights (step 07 output)
     if iterative_dir.exists():
@@ -142,7 +150,8 @@ def predict(sheet_id: str, repo_root: Path, weights_arg: str | None = None):
     # Label the weights source for clarity
     wp = weights_path.relative_to(repo_root)
     if "working" in weights_path.parts:
-        weight_source = "sheet finetune (working)"
+        weight_source = ("sheet finetune (working)" if weights_path.name == f"{sheet_id}_best.weights.h5"
+                         else "area finetune (working)")
     elif "iterative" in weights_path.parts:
         weight_source = "feedback iterative"
     else:

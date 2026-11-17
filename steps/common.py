@@ -82,6 +82,73 @@ def find_mask(mask_dir: Path, sheet_id: str) -> Path | None:
 
 
 
+# -- Downloaded areas (a big area is split by step 00 into blocks <AREA>_r01c01, ...) ---
+#
+# Each block is an ordinary sheet. These helpers let training pool the annotations of all
+# the blocks of one area, and let prediction on any block use weights trained on its area.
+
+def _areas_root(cfg: dict) -> Path:
+    return ROOT / cfg["paths"].get("areas", "data/areas/")
+
+
+def area_blocks(cfg: dict, name: str) -> list[str]:
+    """Block names listed in data/areas/<name>/aoi.json (sorted), or [] if `name` is no area."""
+    import json
+    f = _areas_root(cfg) / name / "aoi.json"
+    if not f.is_file():
+        return []
+    try:
+        return sorted(json.loads(f.read_text(encoding="utf-8")).get("blocks", {}))
+    except (OSError, ValueError):
+        return []
+
+
+def is_area(cfg: dict, name: str) -> bool:
+    """True if `name` is a downloaded multi-block area and not itself a sheet."""
+    sheet_exists = ((ROOT / cfg["paths"]["raw"] / name).exists()
+                    or (ROOT / cfg["paths"]["patches"] / "images" / name).exists())
+    return not sheet_exists and bool(area_blocks(cfg, name))
+
+
+def area_of_sheet(cfg: dict, sheet_id: str) -> str | None:
+    """The downloaded area this sheet is a block of (e.g. 'Stackpole_r01c02' -> 'Stackpole')."""
+    root = _areas_root(cfg)
+    if not root.is_dir():
+        return None
+    for d in sorted(p for p in root.iterdir() if p.is_dir()):
+        if sheet_id in area_blocks(cfg, d.name):
+            return d.name
+    return None
+
+
+def export_masks_if_stale(cfg: dict, sheet_id: str, label: str) -> None:
+    """Run export_masks.py for a sheet when it has labelme annotations but no up-to-date
+    masks for `label` (missing, or older than the newest annotation file)."""
+    import subprocess
+    ann = ROOT / cfg["paths"]["annotations"]
+    jsons = list((ann / "labelme_json" / sheet_id).glob("*.json"))
+    if not jsons:
+        return
+    masks = list((ann / label / sheet_id / "masks").glob("*.png"))
+    if masks and max(p.stat().st_mtime for p in masks) >= max(p.stat().st_mtime for p in jsons):
+        return
+    print(f"  exporting masks for {sheet_id} ...")
+    subprocess.run([sys.executable, str(ROOT / "steps" / "02_annotate" / "export_masks.py"),
+                    "--sheet", sheet_id], check=False, stdout=subprocess.DEVNULL)
+
+
+def annotated_blocks(cfg: dict, area: str, label: str, need: str = "masks") -> list[str]:
+    """Blocks of `area` that have annotation data for class `label` (exporting masks first
+    where the labelme files are newer). `need` is the sub-folder that must hold PNGs."""
+    ann = ROOT / cfg["paths"]["annotations"]
+    out = []
+    for b in area_blocks(cfg, area):
+        export_masks_if_stale(cfg, b, label)
+        if any((ann / label / b / need).glob("*.png")):
+            out.append(b)
+    return out
+
+
 # -- Class names -------------------------------------------------------------------
 
 NOT_CLASSES = {"labelme_json", "original_weights", "feedback"}   # folders that are not feature classes

@@ -59,7 +59,7 @@ MAPSAM_DIR = ROOT / "models" / "MapSAM"
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(MAPSAM_DIR))
 sys.path.insert(0, str(ROOT / "steps"))   # shared helpers
-from common import tensor_from_numpy   # noqa: E402
+from common import tensor_from_numpy, is_area, annotated_blocks   # noqa: E402
 
 from sam_dora_image_encoder import DoRA_Sam      # noqa: E402
 from segment_anything import sam_model_registry  # noqa: E402
@@ -263,7 +263,8 @@ def _resolve_weights(args_weights, feature: str, finetuned_dir: Path,
 def main():
     parser = argparse.ArgumentParser(description="Fine-tune MapSAM DoRA weights")
     parser.add_argument("--sheet",   required=True,
-                        help="Map sheet name (subdirectory under annotations/)")
+                        help="Map sheet name (subdirectory under annotations/), or a downloaded "
+                             "area name to pool the annotations of all its blocks")
     parser.add_argument("--feature", required=True,
                         help="Feature class - any label used in labelme annotations "
                              "(e.g. water, building, vegetation)")
@@ -281,11 +282,23 @@ def main():
 
     # Annotation data lives directly under annotations/<feature>/<sheet>/
     # - no per-feature config entry needed
-    images_dir = ROOT / paths["annotations"] / args.feature / args.sheet / "images"
-    masks_dir  = ROOT / paths["annotations"] / args.feature / args.sheet / "masks"
+    pooled = is_area(cfg, args.sheet)
+    if pooled:
+        # One training set from every block of the area that has this feature annotated.
+        sources = annotated_blocks(cfg, args.sheet, args.feature, need="images")
+        if not sources:
+            sys.exit(f"'{args.sheet}' is a downloaded area, but none of its blocks has "
+                     f"'{args.feature}' annotations yet.\nAnnotate some patches on its blocks "
+                     "(python run.py annotate --sheet <BLOCK>) and try again.")
+        print(f"Area '{args.sheet}': pooling '{args.feature}' annotations from {len(sources)} block(s)")
+    else:
+        sources = [args.sheet]
+    ann_root   = ROOT / paths["annotations"] / args.feature
+    images_dir = ann_root / sources[0] / "images"
+    masks_dir  = ann_root / sources[0] / "masks"
 
     # Auto-export masks from labelme JSON if not done yet
-    if not images_dir.exists() or not any(images_dir.glob("*.png")):
+    if not pooled and (not images_dir.exists() or not any(images_dir.glob("*.png"))):
         print(f"Annotations not found at {images_dir}\nRunning export_masks.py first...\n")
         result = subprocess.run(
             [sys.executable,
@@ -345,10 +358,14 @@ def main():
 
     # ---- Data -----------------------------------------------------------------
     all_pairs = [
-        (images_dir / p.name, masks_dir / p.name)
-        for p in sorted(images_dir.glob("*.png"))
-        if (masks_dir / p.name).exists()
+        (ann_root / s / "images" / p.name, ann_root / s / "masks" / p.name)
+        for s in sources
+        for p in sorted((ann_root / s / "images").glob("*.png"))
+        if (ann_root / s / "masks" / p.name).exists()
     ]
+    if pooled:
+        for s in sources:
+            print(f"  {s}: {sum(1 for a, _ in all_pairs if a.parent.parent.name == s)} annotated patches")
     if not all_pairs:
         sys.exit(
             f"No paired images + masks found.\n"
@@ -445,7 +462,7 @@ def main():
     print(f"  Weights: {best_path.relative_to(ROOT)}")
     print(f"  Log:     {log_path.relative_to(ROOT)}")
     print(
-        f"\nNext step: predict this feature across the sheet\n"
+        f"\nNext step: predict this feature across the {'area (every block)' if pooled else 'sheet'}\n"
         f"  conda activate polygons\n"
         f"  python run.py predict-polygons --sheet {args.sheet} "
         f"--feature {args.feature}"

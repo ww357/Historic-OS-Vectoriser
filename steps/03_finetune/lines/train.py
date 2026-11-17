@@ -1,5 +1,7 @@
 """
-Fine-tune the boundary U-Net on labelme-annotated patches for a single sheet.
+Fine-tune the boundary U-Net on labelme-annotated patches for a single sheet, or for a
+whole downloaded area: `--sheet Stackpole` pools the annotated patches of every block
+(Stackpole_r01c01, ...) into one training set and one set of weights.
 
 Weight search order (starting weights):
   1. --weights CLI argument (explicit path)
@@ -7,7 +9,8 @@ Weight search order (starting weights):
   3. Most recently modified *.weights.h5 in models/base/ (recursive)
 
 Output weights are saved to models/finetuned/working/<SHEET_ID>_best.weights.h5
-and overwrite any previous fine-tune for that sheet.  These working weights are
+(<AREA>_best.weights.h5 when pooling an area; predict-lines uses them on every block of
+the area) and overwrite any previous fine-tune of that name.  These working weights are
 sheet-specific and temporary - they exist to produce the best possible predictions
 for this sheet.  Step 07 feedback fine-tuning starts from the iterative/ weights,
 not from these.
@@ -40,6 +43,8 @@ from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT))
+sys.path.insert(0, str(ROOT / "steps"))   # shared helpers
+from common import is_area, annotated_blocks   # noqa: E402
 
 from models.SolidLineUNet.architecture import build_model, LOSS_MAP, dsc, clDice, tp, tn, prec, recall
 from models.SolidLineUNet.augmentation import make_augmented_dataset
@@ -180,9 +185,10 @@ class PathMetricsCallback(tf.keras.callbacks.Callback):
 # ---------------------------------------------------------------------------
 
 def main():
-    parser = argparse.ArgumentParser(description="Fine-tune boundary U-Net for a single sheet")
+    parser = argparse.ArgumentParser(description="Fine-tune boundary U-Net for a sheet or a whole area")
     parser.add_argument("--sheet",   required=True,
-                        help="Map sheet name (subdirectory under patches/images/ and annotations/)")
+                        help="Map sheet name (subdirectory under patches/images/ and annotations/), "
+                             "or a downloaded area name to pool the annotations of all its blocks")
     parser.add_argument("--config",  default="config.yaml",
                         help="Path to config.yaml (default: config.yaml)")
     parser.add_argument("--weights", default=None,
@@ -195,11 +201,22 @@ def main():
     paths_cfg    = cfg["paths"]
 
     boundary_label = cfg["annotation"].get("boundary_label", "boundary")
-    patches_dir    = ROOT / paths_cfg["patches"] / "images" / args.sheet
-    masks_dir      = ROOT / paths_cfg["annotations"] / boundary_label / args.sheet / "masks"
+    pooled         = is_area(cfg, args.sheet)
+    if pooled:
+        # One training set from every block of the area that has annotations.
+        sources = annotated_blocks(cfg, args.sheet, boundary_label)
+        if not sources:
+            sys.exit(f"'{args.sheet}' is a downloaded area, but none of its blocks has '{boundary_label}' "
+                     "annotations yet.\nAnnotate some patches on its blocks "
+                     "(python run.py annotate --sheet <BLOCK>) and try again.")
+        print(f"Area '{args.sheet}': pooling annotations from {len(sources)} block(s)")
+    else:
+        sources = [args.sheet]
+    patches_dir    = ROOT / paths_cfg["patches"] / "images" / sources[0]
+    masks_dir      = ROOT / paths_cfg["annotations"] / boundary_label / sources[0] / "masks"
 
     # Auto-export masks from labelme JSON if not yet done
-    if not masks_dir.exists() or not any(masks_dir.glob("*.png")):
+    if not pooled and (not masks_dir.exists() or not any(masks_dir.glob("*.png"))):
         print(f"Masks not found at {masks_dir}")
         print("Running export_masks.py first...\n")
         import subprocess
@@ -222,9 +239,16 @@ def main():
     tile_size = unet_cfg["inference_size"]
 
     # ---- Load data ---------------------------------------------------------
-    print(f"Sheet: {args.sheet}")
+    print(f"{'Area' if pooled else 'Sheet'}: {args.sheet}")
     print("Loading patches...")
-    all_records = load_patch_tiles(patches_dir, masks_dir, tile_size)
+    all_records = []
+    for src in sources:
+        recs = load_patch_tiles(ROOT / paths_cfg["patches"] / "images" / src,
+                                ROOT / paths_cfg["annotations"] / boundary_label / src / "masks",
+                                tile_size)
+        if pooled:
+            print(f"  {src}: {len({r['patch_name'] for r in recs})} annotated patches")
+        all_records += recs
     if not all_records:
         sys.exit(
             f"No paired patches found.\n"
@@ -336,6 +360,15 @@ def main():
 
     print(f"\nDone. Best path_f1={callbacks[0].best_f1:.4f}")
     print(f"Weights saved -> {best_path.relative_to(ROOT)}")
+    if pooled:
+        print(
+            f"\nNext step: predict every block of the area with these weights, then mend in QGIS:\n"
+            f"  python run.py predict-lines --sheet {args.sheet}\n"
+            f"Then, for each block you mended:\n"
+            f"  python run.py prepare-lines --sheet <BLOCK>\n"
+            f"  python run.py feedback-lines --sheet <BLOCK>"
+        )
+        return
     print(
         f"\nNext step: run prediction then mend in QGIS, then run step 06 feedback:\n"
         f"  python run.py predict-lines --sheet {args.sheet}\n"

@@ -109,6 +109,10 @@ PER_BLOCK_OK = {
 }
 
 
+# Commands that take an area name themselves and pool the annotations of all its blocks.
+POOLED = {"train-lines", "train-polygons"}
+
+
 def _path_setting(key: str, default: str) -> Path:
     try:
         import yaml
@@ -224,6 +228,8 @@ def main() -> None:
     found = find_sheet_arg(passthrough)
     if found and command != "download":
         blocks = area_blocks(found[1])
+        if blocks and command in POOLED:
+            blocks = []      # the script pools the area's annotations itself
         if blocks and command in PER_BLOCK_OK:
             raise SystemExit(run_per_block(command, script, passthrough, found, blocks))
         if blocks:
