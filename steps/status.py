@@ -129,7 +129,8 @@ def gather(sheet: str, cfg: dict, detail: bool = False) -> dict:
 
     # Feedback artefacts produced after mending.
     feedback = {
-        "lines":    (ROOT / "data" / "feedback" / boundary_label / sheet / "eligible.csv").exists(),
+        # 06_feedback/lines/prepare.py writes to data/feedback/boundary/ whatever the label is called
+        "lines":    (ROOT / "data" / "feedback" / "boundary" / sheet / "eligible.csv").exists(),
         "polygons": sorted(
             d.name for d in (ann_root.iterdir() if ann_root.is_dir() else [])
             if d.is_dir() and _count_pngs(d / "feedback" / sheet / "masks")
@@ -158,7 +159,8 @@ def suggest_next(s: dict) -> str | None:
     """First gap in the canonical order, as a runnable run.py command."""
     sheet = s["sheet"]
     if not s["raw"]:
-        return f"# place the map at data/raw/{sheet}/{sheet}.(tif|jpg|png|vrt) first"
+        return (f"# no raw map yet: download one with  python run.py download --area {sheet} --series <id> --bbox ...\n"
+                f"        or place it at data/raw/{sheet}/{sheet}.(tif|jpg|png|vrt)")
     if not s["patches"]:
         flag = " --mask" if s["mask"] else ""
         return f"python run.py patchify --sheet {sheet}{flag}"

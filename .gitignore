@@ -4,7 +4,7 @@ __pycache__/
 
 data/
 
-prompts.txt
+Historic-OS-vectoriser.qgz
 
 models/base/
 models/finetuned/
@@ -14,8 +14,6 @@ models/MapTextPipeline
 models/__pycache__/
 
 
-temp:
-docs/
-gui/
-identity_check.py
+#temp:
+
 models/DoRALinearUNet/

@@ -1,8 +1,11 @@
 # Labelme config for cadastral map annotation.
 # Passed to labelme via --config at launch.
 #
+# NOTE: if config.yaml defines a `taxonomy`, annotate.py replaces the `labels:` list below with
+# the taxonomy classes. This list is only the fallback when there is no taxonomy.
+#
 # Example feature labels (type one of these as the shape label):
-#   boundary   → linestrip  — land parcel boundary lines
+#   solid      → linestrip  — solid boundary lines (annotation.boundary_label in config.yaml)
 #   dashed     → linestrip  — dashed/gappy boundary lines (parish bounds, tenure splits, etc.)
 #   water      → polygon    — water features
 #   building   → polygon    — building footprints
@@ -11,7 +14,7 @@
 #   <text>     → polygon    — any other label is treated as a new feature class to finetune MapSAM
 
 labels:
-  - boundary
+  - solid
   - dashed
   - water
   - building

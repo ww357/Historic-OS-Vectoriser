@@ -124,12 +124,14 @@ def patchify(sheet_id: str, require_mask: bool, repo_root: Path):
         # geographic CRS they are DEGREES, so "5" would mean 5 deg (~500 km) - every
         # threshold would be meaningless. Reproject to a projected metre CRS first.
         # (No CRS at all is fine: the ungeoreferenced pixel-coordinate path.)
-        if has_georef and src.crs.is_geographic:
+        # Web Mercator (EPSG:3857) is also rejected: it is "metric" but its metres are
+        # stretched by 1/cos(latitude) (about 1.8x too long at 56N), so thresholds would be wrong.
+        if has_georef and (src.crs.is_geographic or src.crs.to_epsg() == 3857):
             sys.exit(
-                f"'{raw_path.name}' is in a geographic (degree-based) CRS: "
+                f"'{raw_path.name}' is in a CRS whose units are not true ground metres: "
                 f"{src.crs.to_string()}.\n"
                 "The pipeline's thresholds are in linear CRS units (metres), so a "
-                "degree CRS would make every threshold meaningless.\n"
+                "degree or Web Mercator CRS would make every threshold meaningless.\n"
                 "Reproject to a projected metre CRS first (BNG, UTM, Irish Grid, ...):\n"
                 f"  python run.py reproject --sheet {sheet_id}\n"
                 "Set the target under `reproject:` in config.yaml (default EPSG:27700). "
