@@ -83,6 +83,14 @@ paths:
 #   scheme   xyz (default) or tms (y axis flipped)
 #   key_tiles  optional URL of the layer's key image tileset (see `download --key`)
 series:
+  6in_1st:
+    label: OS six-inch to the mile, England and Wales, 1st edition (1840s-1880s)
+    edition: 1st
+    county_layers: six_inch_1st_ew   # NLS holds this as one tileset per county; see steps/00_download/nls_tilesets.yaml
+    min_zoom: 1
+    max_zoom: 17
+    attribution: Courtesy of the National Library of Scotland
+    key_tiles: null
   6in_2nd:
     label: OS six-inch to the mile, Great Britain, 2nd edition (1888-1915)
     edition: 2nd
@@ -102,11 +110,11 @@ series:
     attribution: Courtesy of the National Library of Scotland
     key_tiles: https://mapseries-tilesets.s3.amazonaws.com/os/10k_key
 
-  # Not yet available here, because NLS hosts them as separate COUNTY tilesets (one URL per county):
-  #   six-inch 1st edition England and Wales (1840s-1880s), 25-inch 1892-1914 England and Wales,
-  #   25-inch 1st edition (SW England only), National Grid 1:2,500.
-  # Downloading across county borders needs the county lookup described in the project notes;
-  # until that is built, only seamless (single-URL) layers can be listed here.
+  # Series that use `county_layers` (like 6in_1st) are NLS series held as one tileset PER COUNTY.
+  # They need no tile_url: the downloader asks NLS which sheets cover your area, then uses each
+  # county's tileset only inside its own sheet outlines and stitches them. The county -> tileset
+  # lookup is steps/00_download/nls_tilesets.yaml (regenerate: python run.py download --refresh-index).
+  # Not yet added (also county-based): 25-inch 1892-1914 and 1st edition, National Grid 1:2,500.
 
 download:
   zoom:               16          # tile zoom. 16 is ~1.5 m/px on the ground in England/Wales; 17 ~0.75; 18 ~0.37
@@ -122,6 +130,13 @@ download:
   timeout:            30          # seconds per request
   retries:            5           # per tile, with exponential backoff
   confirm_over_tiles: 20000       # ask for --yes above this many NEW tiles (~1 GB)
+  # County-layer series only (see `series`):
+  seam_margin_cap_m:  3000        # where two counties overlap, the seam is placed where each has equal map
+                                  #   around it, measured up to this distance (metres) from its sheet edge
+  boundary_tolerance_m: 75        # a county layer may supply map this far past its county line, so the
+                                  #   historic boundary data never leaves a hairline gap along the seam
+  seam_cell_px:       8           # seam scoring grid = this many output pixels per cell (coarse = fast)
+  wfs_url:            https://geoserver.nls.uk/geoserver/wfs   # NLS feature service (sheet outlines)
 
 
 # Optional: reproject georeferenced maps before patchification.

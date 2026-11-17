@@ -58,7 +58,10 @@ repo root/
 
 Gets a chosen area of a georeferenced National Library of Scotland (NLS) Ordnance Survey layer and writes it as pipeline-ready sheets (British National Grid GeoTIFF + map-area mask), so steps 01 onwards work unchanged. Runs in `maptools`.
 
-Series available now (both cover all of Great Britain as one seamless layer): `6in_2nd` (six-inch, 2nd edition, 1888-1915) and `10k_natgrid` (National Grid 1:10,000, 1949-1975). Other NLS series are hosted per county and are not available yet.
+Series available now (`python run.py download --series help`):
+- `6in_1st` - six-inch, England and Wales, 1st edition (1840s-1880s). NLS holds this as one tileset **per county**; see "County-layer series" below.
+- `6in_2nd` - six-inch, Great Britain, 2nd edition (1888-1915). One seamless layer.
+- `10k_natgrid` - National Grid 1:10,000, Great Britain (1949-1975). One seamless layer.
 
 ```bash
 conda activate maptools
@@ -77,7 +80,26 @@ python run.py patchify --sheet Porlock --mask
 
 **Choosing the area** (one of): `--bbox MINE MINN MAXE MAXN` (BNG metres), `--centre E N --size-km 5`, `--latlon-bbox MINLON MINLAT MAXLON MAXLAT`, or `--polygon area.gpkg` (any vector file; the map outside the polygon is masked out).
 
-**Sheets and names.** A small area becomes one sheet named after `--area`. An area larger than `download.block_px` pixels per side (default 8000) is split into equal, slightly overlapping blocks named `<AREA>_r01c01`, `<AREA>_r01c02`, ... Each block is an ordinary sheet (`--sheet <AREA>_r01c01`), so RAM stays bounded for any area size. Each sheet's `data/raw/<SHEET>/source.json` records the series, zoom, attribution and the block's un-padded core for the later merge.
+**County-layer series (`6in_1st`).** Because each county is a separate tileset, an area that crosses a county border is stitched automatically:
+1. The downloader asks NLS which sheets cover your area (each sheet's county, survey and publication years) and which counties they belong to.
+2. Each county's tiles are used **only inside that county** (its historic boundary, c.1860, plus a 75 m tolerance). OS left a neighbouring county's land blank on a sheet even where the sheet extends over it, so using the whole sheet would paste blank paper over real map.
+3. The seams therefore follow the county boundaries. Only the tiles actually needed are downloaded.
+
+`--dry-run` prints the plan: counties, sheet counts, survey and publication years, who supplies how much of your area, and the tile count.
+
+```bash
+python run.py download --area Border --series 6in_1st --bbox 305000 117000 313000 123000 --dry-run
+python run.py download --area Border --series 6in_1st --bbox 305000 117000 313000 123000 --plan      # choose in a window
+python run.py download --area Border --series 6in_1st --bbox ... --exclude Devonshire               # leave a county out
+```
+- `--plan` opens a window (like `draw-mask`): your area over the sheet outlines and county boundaries, with a live preview of who supplies what. Click a county in the list to cycle automatic / preferred / excluded; Enter accepts, Esc cancels.
+- `--exclude COUNTY` drops a county (its part of the area is left white and masked out). `--prefer COUNTY` lets it win in the thin strip where two counties both have map. County names are the spellings in the plan table.
+- Each sheet also gets `<SHEET>_source_index.tif` (pixel value = which county supplied it; the key is in `source.json` along with every source sheet's survey and publication years). `data/areas/<AREA>/footprints.geojson` keeps the sheet outlines and county boundaries for resuming offline.
+- The county lookup is `steps/00_download/nls_tilesets.yaml`, generated from NLS's map viewer. If NLS adds or renames layers: `python run.py download --refresh-index`.
+- The map-area mask for county series comes from the sheet outlines and county boundaries (the tiles themselves are opaque, so tile transparency cannot show where there is no map).
+- Neighbouring counties' paper tints differ a little, so a faint colour change can be visible at a seam.
+
+**Sheets and names.** A small area becomes one sheet named after `--area`. An area larger than `download.block_px` pixels per side (default 8000) is split into equal, slightly overlapping blocks named `<AREA>_r01c01`, `<AREA>_r01c02`, ... Each block is an ordinary sheet (`--sheet <AREA>_r01c01`), so RAM stays bounded for any area size. With `python run.py`, `--sheet <AREA>` runs the command once per block for `reproject`, `patchify`, `status`, and every `predict-*` and `vectorise-*` step (one failed block doesn't stop the rest). Annotating, training and the interactive tools need one named block. Each sheet's `data/raw/<SHEET>/source.json` records the series, zoom, attribution and the block's un-padded core for the later merge.
 
 **Zoom and resolution.** `--zoom` (default 16, set in `config.yaml > download`). Each zoom step quarters the ground size of a pixel and quadruples the tiles; the dry run prints the ground resolution (zoom 16 is about 1.5 m/px in England and Wales, 17 about 0.75, 18 about 0.37). The output is written at the tiles' native ground resolution unless you pass `--resolution` (e.g. `0.5`). Zoom is capped at each series' maximum (6in_2nd: 17, 10k_natgrid: 16).
 
@@ -87,7 +109,7 @@ python run.py patchify --sheet Porlock --mask
 
 **Label taxonomy.** `config.yaml > taxonomy` (top of the file) defines the classes you annotate: name, line or polygon, which model learns it, and a note. `annotate` offers exactly these labels in labelme. Edit it as you learn the map symbology.
 
-Tiles are NLS's; keep the attribution (`Courtesy of the National Library of Scotland`) with anything you publish, and check each layer's re-use terms.
+Tiles are NLS's; keep the attribution (`Courtesy of the National Library of Scotland`) with anything you publish. NLS describes these layers as for local desktop use, free for non-commercial use and licensed for commercial use by tiles requested (which includes repeated automated use), so check which applies to you before pulling large areas (maps@nls.uk for bulk requests).
 
 Running through the pipeline:
 ```python

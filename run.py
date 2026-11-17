@@ -98,6 +98,79 @@ def current_env() -> str | None:
     return Path(prefix).name if prefix else None
 
 
+# Commands that work on one sheet at a time and are independent between sheets, so
+# `--sheet AREA` can safely be run once per block of a downloaded area. Training,
+# annotation and the interactive tools are NOT in this list: they need you to pick
+# which block(s) to work on.
+PER_BLOCK_OK = {
+    "reproject", "patchify", "status",
+    "predict-lines", "predict-dashed", "predict-polygons", "predict-text", "predict-parcels",
+    "vectorise-lines", "vectorise-dashed", "vectorise-polygons", "vectorise-text", "vectorise-parcels",
+}
+
+
+def _path_setting(key: str, default: str) -> Path:
+    try:
+        import yaml
+        cfg = yaml.safe_load((ROOT / "config.yaml").read_text(encoding="utf-8")) or {}
+        return ROOT / cfg.get("paths", {}).get(key, default)
+    except Exception:
+        return ROOT / default
+
+
+def area_blocks(name: str) -> list[str]:
+    """Blocks of a downloaded area (data/areas/<name>/aoi.json) that have a raw map on disk.
+    Returns [] when `name` is not an area, or is itself an existing sheet."""
+    import json
+    raw = _path_setting("raw", "data/raw/")
+    if (raw / name).exists():
+        return []
+    aoi = _path_setting("areas", "data/areas/") / name / "aoi.json"
+    if not aoi.exists():
+        return []
+    try:
+        blocks = json.loads(aoi.read_text(encoding="utf-8")).get("blocks", {})
+    except (OSError, ValueError):
+        return []
+    return sorted(b for b in blocks if (raw / b / f"{b}.tif").exists())
+
+
+def find_sheet_arg(args: list[str]) -> tuple[int, str] | None:
+    """(index of the value in args, value) for `--sheet X` / `--sheet=X`; the value index is
+    negative-encoded as -(i+1) for the `--sheet=X` form so the caller can rebuild it."""
+    for i, a in enumerate(args):
+        if a == "--sheet" and i + 1 < len(args):
+            return i + 1, args[i + 1]
+        if a.startswith("--sheet="):
+            return -(i + 1), a.split("=", 1)[1]
+    return None
+
+
+def run_per_block(command: str, script: Path, passthrough: list[str], found, blocks: list[str]) -> int:
+    pos, area = found
+    n = len(blocks)
+    print(f"\n'{area}' is a downloaded area of {n} sheets: {', '.join(blocks)}\n"
+          f"Running '{command}' on each in turn (Ctrl+C stops; finished sheets keep their results).")
+    failed = []
+    i = 0
+    try:
+        for i, b in enumerate(blocks, 1):
+            args = list(passthrough)
+            if pos < 0:
+                args[-pos - 1] = f"--sheet={b}"
+            else:
+                args[pos] = b
+            print(f"\n{'=' * 70}\n[{i}/{n}] {command} --sheet {b}\n{'=' * 70}", flush=True)
+            if subprocess.run([sys.executable, str(script), *args]).returncode != 0:
+                failed.append(b)
+    except KeyboardInterrupt:
+        print(f"\nStopped after {i - 1} of {n} sheets.")
+        return 130
+    print(f"\n{'=' * 70}\n{command}: {n - len(failed)} of {n} sheets finished"
+          + (f"; failed: {', '.join(failed)}" if failed else "") + ".")
+    return 1 if failed else 0
+
+
 def print_list() -> None:
     print("\nUsage:  python run.py <command> [--sheet SHEET] [flags...]\n")
     for title, names in GROUPS:
@@ -146,6 +219,17 @@ def main() -> None:
             file=sys.stderr,
         )
         sys.exit(1)
+
+    # `--sheet AREA` where AREA is a downloaded area split into blocks (AREA_r01c01, ...).
+    found = find_sheet_arg(passthrough)
+    if found and command != "download":
+        blocks = area_blocks(found[1])
+        if blocks and command in PER_BLOCK_OK:
+            raise SystemExit(run_per_block(command, script, passthrough, found, blocks))
+        if blocks:
+            sys.exit(f"'{found[1]}' is a downloaded area split into {len(blocks)} sheets, and "
+                     f"'{command}' works on one sheet at a time.\nPick one:  --sheet "
+                     + "\n           --sheet ".join(blocks))
 
     # Same interpreter, so the script runs in whatever env is active.
     raise SystemExit(subprocess.run([sys.executable, str(script), *passthrough]).returncode)

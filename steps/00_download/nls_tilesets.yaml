@@ -1,0 +1,279 @@
+# County-layer index for step 00 (python run.py download --refresh-index).
+# Generated from NLS's map viewer and feature service - do not edit by hand.
+# Each family lists the tileset that holds each county. Re-run the refresh if NLS changes layers.
+generated_utc: '2026-11-17T12:06:35+00:00'
+generated_from: https://maps.nls.uk/geo/scripts/20251114/explore-layers-ol6.js
+families:
+  six_inch_1st_ew:
+    label: OS six-inch to the mile, England and Wales, 1st edition (1840s-1880s), county layers
+    wfs_typename: nls:Six_Inch_Eng_Scot_Wal_1st
+    wfs_filter:
+      COUNTRY: [ENG, WAL]
+    boundary_typename: nls:Counties1860_HCT
+    unmatched_counties: []
+    tilesets:
+      anglesey:
+        url: https://mapseries-tilesets.s3.amazonaws.com/os/six-inch-anglesey/{z}/{x}/{y}.png
+        counties: [Anglesey]
+        bounds: [-4.708226, 53.106953, -3.958778, 53.44307]
+        max_zoom: 17
+      bedfordshire:
+        url: https://mapseries-tilesets.s3.amazonaws.com/os/six-inch-bedfordshire/{z}/{x}/{y}.png
+        counties: [Bedfordshire]
+        bounds: [-0.738607, 51.801774, -0.079284, 52.369206]
+        max_zoom: 17
+      berkshire:
+        url: https://mapseries-tilesets.s3.amazonaws.com/os/six-inch-berkshire/{z}/{x}/{y}.png
+        counties: [Berkshire]
+        bounds: [-1.764482, 51.338673, -0.496617, 51.754201]
+        max_zoom: 17
+      brecknockshire:
+        url: https://mapseries-tilesets.s3.amazonaws.com/os/six-inch-brecknockshire/{z}/{x}/{y}.png
+        counties: [Brecknockshire]
+        bounds: [-3.833024, 51.722557, -2.964637, 52.316435]
+        max_zoom: 17
+      buckinghamshire:
+        url: https://mapseries-tilesets.s3.amazonaws.com/os/six-inch-buckinghamshire/{z}/{x}/{y}.png
+        counties: [Buckinghamshire]
+        bounds: [-1.206093, 51.453453, -0.347156, 52.213547]
+        max_zoom: 17
+      caernarvonshire:
+        url: https://mapseries-tilesets.s3.amazonaws.com/os/six-inch-caernarvonshire/{z}/{x}/{y}.png
+        counties: [Caernarvonshire]
+        bounds: [-4.837724, 52.728041, -3.66903, 53.358248]
+        max_zoom: 17
+      cambridgeshire:
+        url: https://mapseries-tilesets.s3.amazonaws.com/os/six-inch-cambridgeshire/{z}/{x}/{y}.png
+        counties: [Cambridgeshire]
+        bounds: [-0.301878, 51.99682, 0.57645, 52.76698]
+        max_zoom: 17
+      cardiganshire:
+        url: https://mapseries-tilesets.s3.amazonaws.com/os/six-inch-cardiganshire/{z}/{x}/{y}.png
+        counties: [Cardiganshire]
+        bounds: [-4.74849, 52.035294, -3.596299, 52.577219]
+        max_zoom: 17
+      carmarthenshire:
+        url: https://mapseries-tilesets.s3.amazonaws.com/os/six-inch-carmarthenshire/{z}/{x}/{y}.png
+        counties: [Carmarthenshire]
+        bounds: [-4.8132, 51.632667, -3.665653, 52.143309]
+        max_zoom: 17
+      cheshire:
+        url: https://mapseries-tilesets.s3.amazonaws.com/os/six-inch-cheshire/{z}/{x}/{y}.png
+        counties: [Cheshire]
+        bounds: [-3.279023, 52.918386, -1.66216, 53.582221]
+        max_zoom: 17
+      cornwall:
+        url: https://mapseries-tilesets.s3.amazonaws.com/os/six-inch-cornwall/{z}/{x}/{y}.png
+        counties: [Cornwall]
+        bounds: [-6.466823, 49.851106, -2.879959, 51.276304]
+        max_zoom: 17
+      cumberland:
+        url: https://mapseries-tilesets.s3.amazonaws.com/os/six-inch-cumberland/{z}/{x}/{y}.png
+        counties: [Cumberland]
+        bounds: [-3.652748, 54.145986, -2.286871, 55.201632]
+        max_zoom: 17
+      denbighshire:
+        url: https://mapseries-tilesets.s3.amazonaws.com/os/six-inch-denbighshire/{z}/{x}/{y}.png
+        counties: [Denbighshire]
+        bounds: [-3.985534, 52.783186, -2.816227, 53.372732]
+        max_zoom: 17
+      derbyshire:
+        url: https://mapseries-tilesets.s3.amazonaws.com/os/six-inch-derbyshire/{z}/{x}/{y}.png
+        counties: [Derbyshire]
+        bounds: [-2.082154, 52.667072, -1.187102, 53.520592]
+        max_zoom: 17
+      devonshire:
+        url: https://mapseries-tilesets.s3.amazonaws.com/os/six-inch-devonshire/{z}/{x}/{y}.png
+        counties: [Devonshire]
+        bounds: [-4.731102, 50.188833, -2.879963, 51.276304]
+        max_zoom: 17
+      dorset:
+        url: https://mapseries-tilesets.s3.amazonaws.com/os/six-inch-dorset/{z}/{x}/{y}.png
+        counties: [Dorset]
+        bounds: [-3.083883, 50.553809, -1.759457, 51.089725]
+        max_zoom: 17
+      durham:
+        url: https://mapseries-tilesets.s3.amazonaws.com/os/six-inch-durham/{z}/{x}/{y}.png
+        counties: [Durham]
+        bounds: [-2.354282, 54.431647, -1.135946, 55.018714]
+        max_zoom: 17
+      essex:
+        url: https://mapseries-tilesets.s3.amazonaws.com/os/six-inch-essex/{z}/{x}/{y}.png
+        counties: [Essex]
+        bounds: [-0.077938, 51.39216, 1.351028, 52.103921]
+        max_zoom: 17
+      flintshire:
+        url: https://mapseries-tilesets.s3.amazonaws.com/os/six-inch-flintshire/{z}/{x}/{y}.png
+        counties: [Flintshire]
+        bounds: [-3.554773, 52.888394, -2.672695, 53.373576]
+        max_zoom: 17
+      glamorgan:
+        url: https://mapseries-tilesets.s3.amazonaws.com/os/six-inch-glamorgan/{z}/{x}/{y}.png
+        counties: [Glamorgan]
+        bounds: [-4.389642, 51.346124, -3.106347, 51.826023]
+        max_zoom: 17
+      gloucestershire:
+        url: https://mapseries-tilesets.s3.amazonaws.com/os/six-inch-gloucestershire/{z}/{x}/{y}.png
+        counties: [Gloucestershire]
+        bounds: [-2.750411, 51.387476, -1.607744, 53.150973]
+        max_zoom: 17
+      hampshire:
+        url: https://mapseries-tilesets.s3.amazonaws.com/os/six-inch-hampshire/{z}/{x}/{y}.png
+        counties: [Hampshire & Isle of Wight]
+        bounds: [-2.025443, 50.530579, -0.640681, 51.40881]
+        max_zoom: 17
+      herefordshire:
+        url: https://mapseries-tilesets.s3.amazonaws.com/os/six-inch-herefordshire/{z}/{x}/{y}.png
+        counties: [Herefordshire]
+        bounds: [-3.266093, 51.804909, -2.259978, 52.402711]
+        max_zoom: 17
+      hertfordshire:
+        url: https://mapseries-tilesets.s3.amazonaws.com/os/six-inch-hertfordshire/{z}/{x}/{y}.png
+        counties: [Hertfordshire]
+        bounds: [-0.76005, 51.656901, 0.274069, 52.141649]
+        max_zoom: 17
+      huntingdonshire:
+        url: https://mapseries-tilesets.s3.amazonaws.com/os/six-inch-huntingdonshire/{z}/{x}/{y}.png
+        counties: [Huntingdonshire]
+        bounds: [-0.581637, 52.170157, 0.009709, 52.591198]
+        max_zoom: 17
+      isle-of-man:
+        url: https://mapseries-tilesets.s3.amazonaws.com/os/six-inch-isle-of-man/{z}/{x}/{y}.png
+        counties: [Isle of Man]
+        bounds: [-4.914107, 53.994968, -4.290206, 54.475998]
+        max_zoom: 17
+      kent:
+        url: https://mapseries-tilesets.s3.amazonaws.com/os/six-inch-kent/{z}/{x}/{y}.png
+        counties: [Kent]
+        bounds: [-0.132307, 50.876308, 1.554945, 51.526463]
+        max_zoom: 17
+      lancashire:
+        url: https://mapseries-tilesets.s3.amazonaws.com/os/six-inch-lancashire/{z}/{x}/{y}.png
+        counties: [Lancashire]
+        bounds: [-3.34954, 53.27413, -2.002454, 54.439837]
+        max_zoom: 17
+      leicestershire:
+        url: https://mapseries-tilesets.s3.amazonaws.com/os/six-inch-leicestershire/{z}/{x}/{y}.png
+        counties: [Leicestershire]
+        bounds: [-1.568093, 52.378426, -0.613674, 52.971695]
+        max_zoom: 17
+      lincolnshire:
+        url: https://mapseries-tilesets.s3.amazonaws.com/os/six-inch-lincolnshire/{z}/{x}/{y}.png
+        counties: [Lincolnshire]
+        bounds: [-0.992638, 52.603404, 0.40471, 53.751796]
+        max_zoom: 17
+      merionethshire:
+        url: https://mapseries-tilesets.s3.amazonaws.com/os/six-inch-merionethshire/{z}/{x}/{y}.png
+        counties: [Merionethshire]
+        bounds: [-4.195466, 52.530668, -3.166504, 53.069222]
+        max_zoom: 17
+      middlesex:
+        url: https://mapseries-tilesets.s3.amazonaws.com/os/six-inch-middlesex/{z}/{x}/{y}.png
+        counties: [Middlesex]
+        bounds: [-0.596061, 51.37107, 0.126911, 51.73295]
+        max_zoom: 17
+      monmouthshire:
+        url: https://mapseries-tilesets.s3.amazonaws.com/os/six-inch-monmouthshire/{z}/{x}/{y}.png
+        counties: [Monmouthshire]
+        bounds: [-3.267597, 51.46071, -2.54967, 51.995746]
+        max_zoom: 17
+      montgomeryshire:
+        url: https://mapseries-tilesets.s3.amazonaws.com/os/six-inch-montgomeryshire/{z}/{x}/{y}.png
+        counties: [Montgomeryshire]
+        bounds: [-3.905412, 52.329559, -2.955862, 52.895057]
+        max_zoom: 17
+      norfolk:
+        url: https://mapseries-tilesets.s3.amazonaws.com/os/six-inch-norfolk/{z}/{x}/{y}.png
+        counties: [Norfolk]
+        bounds: [0.119712, 52.344206, 1.79045, 53.000323]
+        max_zoom: 17
+      northamptonshire:
+        url: https://mapseries-tilesets.s3.amazonaws.com/os/six-inch-northamptonshire/{z}/{x}/{y}.png
+        counties: [Northamptonshire]
+        bounds: [-1.351487, 51.944729, -0.116721, 52.679915]
+        max_zoom: 17
+      northumberland:
+        url: https://mapseries-tilesets.s3.amazonaws.com/os/six-inch-northumberland/{z}/{x}/{y}.png
+        counties: [Northumberland]
+        bounds: [-2.783424, 54.753715, -1.397741, 55.806306]
+        max_zoom: 17
+      nottinghamshire:
+        url: https://mapseries-tilesets.s3.amazonaws.com/os/six-inch-nottinghamshire/{z}/{x}/{y}.png
+        counties: [Nottinghamshire]
+        bounds: [-1.354776, 52.783624, -0.681743, 53.521668]
+        max_zoom: 17
+      oxfordshire:
+        url: https://mapseries-tilesets.s3.amazonaws.com/os/six-inch-oxfordshire/{z}/{x}/{y}.png
+        counties: [Oxfordshire]
+        bounds: [-1.765368, 51.455865, -0.911406, 52.235821]
+        max_zoom: 17
+      pembrokeshire:
+        url: https://mapseries-tilesets.s3.amazonaws.com/os/six-inch-pembrokeshire/{z}/{x}/{y}.png
+        counties: [Pembrokeshire]
+        bounds: [-5.512503, 51.586574, -4.435018, 52.15161]
+        max_zoom: 17
+      radnorshire:
+        url: https://mapseries-tilesets.s3.amazonaws.com/os/six-inch-radnorshire/{z}/{x}/{y}.png
+        counties: [Radnorshire]
+        bounds: [-3.690855, 52.068388, -2.958408, 52.432433]
+        max_zoom: 17
+      rutland:
+        url: https://mapseries-tilesets.s3.amazonaws.com/os/six-inch-rutland/{z}/{x}/{y}.png
+        counties: [Rutland]
+        bounds: [-0.854304, 52.521795, -0.401728, 52.768671]
+        max_zoom: 17
+      shropshire:
+        url: https://mapseries-tilesets.s3.amazonaws.com/os/six-inch-shropshire/{z}/{x}/{y}.png
+        counties: [Shropshire]
+        bounds: [-3.265255, 52.296818, -2.169475, 53.008542]
+        max_zoom: 17
+      somerset:
+        url: https://mapseries-tilesets.s3.amazonaws.com/os/six-inch-somerset/{z}/{x}/{y}.png
+        counties: [Somerset]
+        bounds: [-3.916397, 50.784633, -2.169844, 51.524562]
+        max_zoom: 17
+      staffordshire:
+        url: https://mapseries-tilesets.s3.amazonaws.com/os/six-inch-staffordshire/{z}/{x}/{y}.png
+        counties: [Staffordshire]
+        bounds: [-2.572048, 52.373442, -1.61541, 53.230186]
+        max_zoom: 17
+      suffolk:
+        url: https://mapseries-tilesets.s3.amazonaws.com/os/six-inch-suffolk/{z}/{x}/{y}.png
+        counties: [Suffolk]
+        bounds: [0.338164, 51.910233, 1.788745, 52.620045]
+        max_zoom: 17
+      surrey:
+        url: https://mapseries-tilesets.s3.amazonaws.com/os/six-inch-surrey/{z}/{x}/{y}.png
+        counties: [Surrey]
+        bounds: [-0.98366, 51.049803, 0.147071, 51.530264]
+        max_zoom: 17
+      sussex:
+        url: https://mapseries-tilesets.s3.amazonaws.com/os/six-inch-sussex/{z}/{x}/{y}.png
+        counties: [Sussex]
+        bounds: [-1.002268, 50.681249, 0.939897, 51.158818]
+        max_zoom: 17
+      warwickshire:
+        url: https://mapseries-tilesets.s3.amazonaws.com/os/six-inch-warwickshire/{z}/{x}/{y}.png
+        counties: [Warwickshire]
+        bounds: [-1.987804, 51.943704, -1.18713, 52.681897]
+        max_zoom: 17
+      westmorland:
+        url: https://mapseries-tilesets.s3.amazonaws.com/os/six-inch-westmorland/{z}/{x}/{y}.png
+        counties: [Westmorland]
+        bounds: [-3.180961, 54.166343, -2.121581, 54.755142]
+        max_zoom: 17
+      wiltshire:
+        url: https://mapseries-tilesets.s3.amazonaws.com/os/six-inch-wiltshire/{z}/{x}/{y}.png
+        counties: [Wiltshire]
+        bounds: [-2.387037, 50.901045, -1.461146, 51.665839]
+        max_zoom: 17
+      worcestershire:
+        url: https://mapseries-tilesets.s3.amazonaws.com/os/six-inch-worcestershire/{z}/{x}/{y}.png
+        counties: [Worcestershire]
+        bounds: [-2.696479, 51.939062, -1.47071, 52.534815]
+        max_zoom: 17
+      yorkshire:
+        url: https://mapseries-tilesets.s3.amazonaws.com/os/six-inch-yorkshire/{z}/{x}/{y}.png
+        counties: [Yorkshire]
+        bounds: [-2.775964, 53.285779, 0.178569, 54.679555]
+        max_zoom: 17
