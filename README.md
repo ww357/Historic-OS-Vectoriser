@@ -58,16 +58,18 @@ repo root/
 
 Gets a chosen area of a georeferenced National Library of Scotland (NLS) Ordnance Survey layer and writes it as pipeline-ready sheets (British National Grid GeoTIFF + map-area mask), so steps 01 onwards work unchanged. Runs in `maptools`.
 
+Series available now (both cover all of Great Britain as one seamless layer): `6in_2nd` (six-inch, 2nd edition, 1888-1915) and `10k_natgrid` (National Grid 1:10,000, 1949-1975). Other NLS series are hosted per county and are not available yet.
+
 ```bash
 conda activate maptools
 python run.py download --series help                       # series available (edit/add them in config.yaml > series)
 
 # 1. Preview first: sheets, tiles and download size. Nothing is downloaded.
-python run.py download --area Porlock --series 25in_scot_south \
-       --bbox 330000 700000 336000 705000 --dry-run         # --bbox = BNG metres: minE minN maxE maxN
+python run.py download --area Porlock --series 6in_2nd \
+       --bbox 285000 143000 291000 149000 --dry-run         # --bbox = BNG metres: minE minN maxE maxN
 
 # 2. Download (same command without --dry-run)
-python run.py download --area Porlock --series 25in_scot_south --bbox 330000 700000 336000 705000
+python run.py download --area Porlock --series 6in_2nd --bbox 285000 143000 291000 149000
 
 # 3. Next: patchify the sheet it names at the end
 python run.py patchify --sheet Porlock --mask
@@ -77,11 +79,11 @@ python run.py patchify --sheet Porlock --mask
 
 **Sheets and names.** A small area becomes one sheet named after `--area`. An area larger than `download.block_px` pixels per side (default 8000) is split into equal, slightly overlapping blocks named `<AREA>_r01c01`, `<AREA>_r01c02`, ... Each block is an ordinary sheet (`--sheet <AREA>_r01c01`), so RAM stays bounded for any area size. Each sheet's `data/raw/<SHEET>/source.json` records the series, zoom, attribution and the block's un-padded core for the later merge.
 
-**Zoom and resolution.** `--zoom` (default 16, set in `config.yaml > download`). Each zoom step quarters the ground size of a pixel and quadruples the tiles; the dry run prints the ground resolution (zoom 16 is about 1.3 m/px in Scotland, 17 about 0.7, 18 about 0.3). The output is written at the tiles' native ground resolution unless you pass `--resolution` (e.g. `0.5`). Zoom is capped at each series' maximum (6-inch: 17, 25-inch: 18).
+**Zoom and resolution.** `--zoom` (default 16, set in `config.yaml > download`). Each zoom step quarters the ground size of a pixel and quadruples the tiles; the dry run prints the ground resolution (zoom 16 is about 1.5 m/px in England and Wales, 17 about 0.75, 18 about 0.37). The output is written at the tiles' native ground resolution unless you pass `--resolution` (e.g. `0.5`). Zoom is capped at each series' maximum (6in_2nd: 17, 10k_natgrid: 16).
 
 **Safe to stop and resume.** Press Ctrl+C, close the window or lose the network at any point, then run the same command again, or just `python run.py download --area Porlock`. Finished tiles and sheets are kept (a sheet's `.tif` is only written once all its tiles are in), failed tiles are retried with backoff, and a block is never built with missing tiles. Add `--recheck-missing` to re-ask the server about tiles it earlier said do not exist. Downloads over 20,000 new tiles (about 1 GB) need `--yes`.
 
-**Map key images.** `python run.py download --key <series-id or key-tileset-URL>` stitches an NLS key (legend) into `data/keys/<name>.png` to consult while working out your annotation classes, e.g. `--key https://mapseries-tilesets.s3.amazonaws.com/os/10k_key`. Add a series' key URL as `key_tiles` in `config.yaml` and `annotate` will point you to the image.
+**Map key images.** `python run.py download --key <series-id or key-tileset-URL>` stitches an NLS key (legend) into `data/keys/<name>.png` to consult while working out your annotation classes, e.g. `--key 10k_natgrid` (its key is already set). Add a series' key URL as `key_tiles` in `config.yaml` and `annotate` will point you to the image.
 
 **Label taxonomy.** `config.yaml > taxonomy` (top of the file) defines the classes you annotate: name, line or polygon, which model learns it, and a note. `annotate` offers exactly these labels in labelme. Edit it as you learn the map symbology.
 
@@ -90,7 +92,7 @@ Tiles are NLS's; keep the attribution (`Courtesy of the National Library of Scot
 Running through the pipeline:
 ```python
 ## Step 00 - Download (see above)
-python run.py download --area MyArea --series 6in_1st --bbox MINE MINN MAXE MAXN
+python run.py download --area MyArea --series 6in_2nd --bbox MINE MINN MAXE MAXN
 
 ## Step 01 - Patchify
 conda activate maptools 

@@ -2,8 +2,8 @@
 Step 00 - download an area of a historic OS map series from the NLS tile server and
 turn it into pipeline-ready "sheets".
 
-The National Library of Scotland publishes each georeferenced OS series as a seamless
-XYZ (Web Mercator) tile layer. This step downloads the tiles covering an area you
+The National Library of Scotland publishes georeferenced OS maps as XYZ (Web Mercator)
+tile layers. This step downloads the tiles covering an area you
 choose, mosaics them, warps them ONCE to British National Grid (EPSG:27700) and writes
 GeoTIFFs in exactly the layout the rest of the toolkit already reads:
 
@@ -32,10 +32,10 @@ Crash / stop safe, resumable
 
 Usage:
     python steps/00_download/download.py --series help          # list the available series
-    python steps/00_download/download.py --area Porlock --series 25in_scot_south \\
-           --bbox 330000 700000 336000 705000                 # BNG metres: minE minN maxE maxN
+    python steps/00_download/download.py --area Porlock --series 6in_2nd \\
+           --bbox 285000 143000 291000 149000                 # BNG metres: minE minN maxE maxN
     python steps/00_download/download.py --area Porlock        # resume / finish a previous run
-    python steps/00_download/download.py --key 6in_1st         # key image for annotating
+    python steps/00_download/download.py --key 10k_natgrid     # key image for annotating
 """
 
 from __future__ import annotations
@@ -518,14 +518,15 @@ def download_key(source: str, cfg: dict, args) -> None:
 def list_series(cfg: dict) -> None:
     series = cfg.get("series") or {}
     zdef = int((cfg.get("download") or {}).get("zoom", 16))
-    print(f"\n  {'id':<18} {'zoom':<7} {'m/px @56N':<10} label")
+    print(f"\n  {'id':<18} {'zoom':<7} {'m/px @52N':<10} label")
     for sid, s in series.items():
         zmax = int(s.get("max_zoom", 18))
         z = min(zdef, zmax)
-        print(f"  {sid:<18} {s.get('min_zoom', 1)}-{zmax:<5} {native_ground_res(z, 56):<10.2f} {s.get('label', '')}"
+        print(f"  {sid:<18} {s.get('min_zoom', 1)}-{zmax:<5} {native_ground_res(z, 52):<10.2f} {s.get('label', '')}"
               f"{'' if z == zdef else f'   (default zoom {zdef} capped to {z})'}")
     print(f"\n  Default zoom {zdef} (download.zoom). m/px is the layer's real ground resolution at that\n"
-          f"  zoom at ~56N (Scotland); it is finer further south. Higher zoom = finer detail, 4x tiles per step.\n")
+          f"  zoom at ~52N (central England/Wales); a little finer further south. Higher zoom = finer\n"
+          f"  detail, 4x tiles per step.\n")
 
 
 def build_request(args, cfg: dict, prior: dict | None) -> dict:
